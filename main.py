@@ -6,12 +6,6 @@ disp = ST7735R(disp_spi, cs=digitalio.DigitalInOut(board.D9),
                       dc=digitalio.DigitalInOut(board.D11),
                       rst=digitalio.DigitalInOut(board.D12))
 
-import framebuf as fb
-#from tg_usr_cp import scroll
-def scroll(x):
-    print(x)
-#import microcontroller as mc
-
 
 
 disp.fill(colorst(0,0,255))
@@ -21,5 +15,3 @@ disp.fill(colorst(0,0,255))
 disp.text(0,16,'"S,;:@#$%^&*-_+=`~')
 disp.text(0,50,"FOOBAR", size = 3)
 
-
-print(disp._INIT)
