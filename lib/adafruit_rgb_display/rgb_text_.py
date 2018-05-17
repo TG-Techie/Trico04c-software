@@ -19,10 +19,10 @@
 Base class for all RGB Display devices
 Author(s):Radomir Dopieralski, Michael McWethy, and Jonah Yolles-Murphy"""
 import time
+from math import sqrt
 from micropython import const
 import ustruct as struct
 import adafruit_bus_device.spi_device as spi_device
-import framebuf as fb
 
 from tg_modules.fonts.bg import *
 
@@ -67,10 +67,10 @@ class Display: #pylint: disable-msg=no-member
     _ENCODE_POS = ">HH"
     _DECODE_PIXEL = ">BBB"
 
-    def __init__(self, hardware_width, hardware_height, rotation=0):
+    def __init__(self, hardware_width, hardware_height):
+        #hardware_width and height are for to the dram buffer size
         self.hardware_width = hardware_width
         self.hardware_height = hardware_height
-        self.rotation = rotation
         self.init()
 
     def init(self):
@@ -103,8 +103,12 @@ class Display: #pylint: disable-msg=no-member
         """Decode bytes into a pixel color."""
         return color565(*struct.unpack(self._DECODE_PIXEL, data))
 
-    def pixel(self, x, y, color=None):
+    def pixel(self, xin, yin, color=None):
         """Read or write a pixel at a given position."""
+        if self.rotation == 1:
+            x = self.hardware_width - yin -1
+            y = xin
+        
         if color is None:
             return self._decode_pixel(self._block(x, y, x, y))
 
@@ -113,7 +117,7 @@ class Display: #pylint: disable-msg=no-member
         return None
 
     #pylint: disable-msg=too-many-arguments
-    def fill_rectangle(self, x, y, width, height, color):
+    def rect(self, x, y, width, height, color):
         """Draw a rectangle at specified position with specified width and
         height, and fill it with the specified color."""
         x = min(self.hardware_width - 1, max(0, x))
@@ -132,15 +136,15 @@ class Display: #pylint: disable-msg=no-member
 
     def fill(self, color=0):
         #"""Fill the whole display with the specified color."""
-        self.fill_rectangle(0, 0, self.hardware_width, self.hardware_height, color)
+        self.rect(0, 0, self.hardware_width, self.hardware_height, color)
 
-    def hline(self, x, y, hardware_width, color):
+    def hline(self, x, y, width, color):
         #"""Draw a horizontal line."""
-        self.fill_rectangle(x, y, hardware_width, 1, color)
+        self.rect(x, y, width, 1, color)
 
-    def vline(self, x, y, hardware_height, color):
+    def vline(self, x, y, height, color):
         #"""Draw a vertical line."""
-        self.fill_rectangle(x, y, 1, hardware_height, color)
+        self.rect(x, y, 1, height, color)
 
     def text(self,x,y,str, size = 1, color = colorst(255,255,255)):
         comp_list = []
@@ -159,16 +163,28 @@ class Display: #pylint: disable-msg=no-member
             #print(stripe_text) # print out bits being striped
             for j in stripe_text: 
                 if (int(j)):
-                    self.fill_rectangle(x+x_pos,y+y_pos,size,size,color)
+                    self.rect(x+x_pos,y+y_pos,size,size,color)
                 y_pos += size
             x_pos += size
+
+    def round_rect(self,x,y,width,height,r,color):
+        #calc gaps
+        gap_list = ()
+        for j in range(r):
+            gap_list += ((int(r + .5 -sqrt(  (r**2) - ((r-j*.85)**2)  ))),)
+        #stripe top
+        for j in range(r):
+            self.hline(x+gap_list[j],y+j,width - 2*gap_list[j],color)
+        #place mid rect chunk
+        self.rect(x,y+r,width,height-2*r+1,color)
+        #place mid rect
+        for j in reversed(range(r)):
+            self.hline(x+gap_list[j],y+height-j,width - 2*gap_list[j],color)
 
 class DisplaySPI(Display):
     #"""Base class for SPI type devices"""
     #pylint: disable-msg=too-many-arguments
-    def __init__(self, spi, dc, cs, rst=None, hardware_width=1, hardware_height=1,
-                 rotation = 0,
-                 baudrate=12000000, polarity=0, phase=0):
+    def __init__(self, spi, dc, cs, rst=None, hardware_width=1, hardware_height=1, baudrate=12000000, polarity=0, phase=0):
         self.spi_device = spi_device.SPIDevice(spi, cs, baudrate=baudrate,
                                                polarity=polarity, phase=phase)
         self.dc_pin = dc
@@ -177,7 +193,7 @@ class DisplaySPI(Display):
         if self.rst:
             self.rst.switch_to_output(value=0)
             self.reset()
-        super().__init__(hardware_width, hardware_height, rotation)
+        super().__init__(hardware_width, hardware_height)
     #pylint: enable-msg=too-many-arguments
 
     def reset(self):

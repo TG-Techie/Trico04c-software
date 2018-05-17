@@ -20,10 +20,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 """
+'simplified driver for st7735r'
+based on
 `adafruit_rgb_display.st7735`
 ====================================================
 A simple driver for the ST7735-based displays.
-* Author(s): Radomir Dopieralski, Michael McWethy
+* Author(s): Radomir Dopieralski, Michael McWethy, TG-Techie(Jonah Yolles-Murphy)
 """
 
 from adafruit_rgb_display.rgb import DisplaySPI
@@ -82,7 +84,6 @@ _PWCTR6 = const(0xFC)
 _GMCTRP1 = const(0xE0)
 _GMCTRN1 = const(0xE1)
 
-
 class ST7735R(DisplaySPI):
     """A simple driver for the ST7735R-based displays."""
     _COLUMN_SET = _CASET
@@ -120,17 +121,37 @@ class ST7735R(DisplaySPI):
 
 
     #pylint: disable-msg=useless-super-delegation, too-many-arguments
-    def __init__(self, spi, dc, cs, rst=None, hardware_width=128, hardware_height=160):
+    def __init__(self, spi, dc, cs, rst=None, hardware_width=160, hardware_height=160, rotation = 0):
+        self.rotation = rotation
+        if rotation == (1 or 3):
+            self.width = 160
+            self.height = 128
+        else:
+            self.width = 128
+            self.height = 160
         super().__init__(spi, dc, cs, rst, hardware_width, hardware_height,baudrate=23000000,)
 
     def init(self):
         super().init()
         cols = struct.pack('>HH', 0, self.hardware_width - 1)
         rows = struct.pack('>HH', 0, self.hardware_height - 1)
+        rot_num=bytearray(1)
+        try:
+            rot_num[0]= (0b11001000,0b10101000,0b00001000,0b01101000)[self.rotation]
+        except IndexError:
+            rot_num[0]=0b11001000
+        #data[0]=0b10101000
         for command, data in (
                 (_CASET, cols),
                 (_RASET, rows),
                 (_NORON, None),
                 (_DISPON, None),
+                #(_MADCTL, self.rotation),
+                (_MADCTL, rot_num),
         ):
             self.write(command, data)
+        #data=bytearray(1)
+        #data[0]=0b10101000
+        #self.write(_MADCTL,data)
+
+
