@@ -154,7 +154,7 @@ class Display: #pylint: disable-msg=no-member
                 comp_list += text_dict[char]
             except KeyError:
                 comp_list += text_dict["*?*"]
-        #print(comp_list) # degug contated list
+        #print(comp_list) # debug concated list
         x_pos = 0
         y_Pos = 0
         for stripe in comp_list:
