@@ -148,7 +148,7 @@ class Display: #pylint: disable-msg=no-member
 
     def text(self,x,y,str, size = 1, color = colorst(255,255,255)):
         comp_list = []
-        for char in str:
+        for char in str.upper():
             comp_list.append(0)
             try:
                 comp_list += text_dict[char]

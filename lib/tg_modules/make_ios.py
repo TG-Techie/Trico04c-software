@@ -1,7 +1,5 @@
 import digitalio, pulseio, analogio, touchio #, audioio
 
-def my_print(x):
-    print(x)
 
 def dio(pin, direction = None, init_val = None):
     io = digitalio.DigitalInOut(pin)

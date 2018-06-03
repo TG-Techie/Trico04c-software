@@ -1,6 +1,19 @@
-from staging.disp import disp
+from tg_modules.mem_clean import clean_mem
+clean_mem()
+from staging import screen
+clean_mem()
 from tg_modules.tasking import thread_list
+clean_mem()
 
+#make the thread_list for the whole project:
+trd = thread_list()
+
+#screen init
+screen.init(trd)
+
+screen.place_top_bar()
+
+trd.chug()
 
 
 

@@ -29,9 +29,10 @@ class thread_list():
         self.thread_list[priority].append(task(func, arg_tup))
 
     def chug(self):
-        for cur_list in (self.list1,self.list2,self.list3):
+        for cur_list in self.thread_list:
             while len(cur_list):
-                curlist[0].perform()
+                cur_list[0].perform()
+                cur_list.pop(0)
 #            for i in cur_list:
 #                i.perform()
                 
