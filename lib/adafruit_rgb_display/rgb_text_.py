@@ -24,7 +24,7 @@ from micropython import const
 import ustruct as struct
 import adafruit_bus_device.spi_device as spi_device
 
-from tg_modules.fonts.bg import *
+from tg_modules.fonts.bg import text_dict
 
 __version__ = "3.0.3"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_RGB_Display.git"
@@ -159,10 +159,10 @@ class Display: #pylint: disable-msg=no-member
         y_Pos = 0
         for stripe in comp_list:
             y_pos = size
-            stripe_text = bin(stripe)[3:10]
+            #stripe_text = bin(stripe)[3:10]
             #print(stripe_text) # print out bits being striped
-            for j in stripe_text: 
-                if (int(j)):
+            for j in reversed(range(7)): 
+                if (stripe & 2**j):
                     self.rect(x+x_pos,y+y_pos,size,size,color)
                 y_pos += size
             x_pos += size

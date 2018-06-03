@@ -1,15 +1,13 @@
-import busio, board, digitalio
+from staging.pin_port import disp_spi,disp_cs, disp_dc, disp_rst, backlight
+from tg_modules.make_ios import dio
 
-backlite = digitalio.DigitalInOut(board.D13)
-backlite.direction = digitalio.Direction.OUTPUT
+backlite = dio(backlight,0,False)
 backlite.value = False
 
 from adafruit_rgb_display.rgb import colorst
 from adafruit_rgb_display.st7735r import ST7735R
-disp_spi = busio.SPI(clock=board.SCK, MOSI=board.MOSI, MISO=board.MISO)
-disp = ST7735R(disp_spi, cs=digitalio.DigitalInOut(board.D9),
-                      dc=digitalio.DigitalInOut(board.D11),
-                      rst=digitalio.DigitalInOut(board.D12), rotation = 1)
+disp = ST7735R(disp_spi, cs=dio(disp_cs),
+               dc=dio(disp_dc),rst=dio(disp_rst),rotation = 1)
 
 disp.fill(0)
 
