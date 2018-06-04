@@ -3,6 +3,7 @@
 #see:https://creativecommons.org/licenses/by-nc/3.0/us/
 #
 #created by TG-Techie Jonah Yolles-Muprhy,
+#thanks to @sommersoft on adafruit-discord for the debuging help
 #
 #version 1.0, date(us): 060118
 
@@ -20,21 +21,30 @@ blap.chug()
 
 '''
 
+from tg_modules.mem_clean import clean_mem
+
 class thread_list():
 
     def __init__(self, length = 3):
         self.thread_list = [[]]*(length+1)
+        clean_mem()
         
-    def add_task(self,func, arg_tup, priority=3):
-        self.thread_list[priority].append(task(func, arg_tup))
+    def add_task(self,func, arg_tup, priority):
+        if self.thread_list[priority]:  # edit: dropped use of len(), which is less pythonic
+            self.thread_list[priority].append(task(func, arg_tup))
+        else:
+            self.thread_list[priority] = [task(func, arg_tup)]
+        clean_mem()
 
     def chug(self):
         for cur_list in self.thread_list:
             while len(cur_list):
+                print((cur_list))
                 cur_list[0].perform()
                 cur_list.pop(0)
-#            for i in cur_list:
-#                i.perform()
+                print((cur_list))
+                clean_mem()
+
                 
 
 

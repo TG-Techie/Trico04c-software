@@ -7,13 +7,23 @@ clean_mem()
 
 #make the thread_list for the whole project:
 trd = thread_list()
+#print(trd)
+#print(trd.thread_list)
+clean_mem()
 
 #screen init
 screen.init(trd)
 
 screen.place_top_bar()
 
+
+print(trd.thread_list)
+print()
 trd.chug()
+print()
+
+print(trd.thread_list)
+#trd.chug()
 
 
 

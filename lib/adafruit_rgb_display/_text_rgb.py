@@ -148,12 +148,18 @@ class Display: #pylint: disable-msg=no-member
 
     def text(self,x,y,str, size = 1, color = colorst(255,255,255)):
         comp_list = []
-        for char in str.upper():
-            comp_list.append(0)
+        for section in (str.upper()).split():
             try:
-                comp_list += text_dict[char]
+                comp_list.append(0)
+                comp_list += text_dict[section]
             except KeyError:
-                comp_list += text_dict["*?*"]
+                for char in section:
+                    comp_list.append(0)
+                    try:
+                        comp_list += text_dict[char]
+                    except KeyError:
+                        comp_list += text_dict["*?*"]
+            comp_list += text_dict[" "]
         #print(comp_list) # debug concated list
         x_pos = 0
         y_Pos = 0
