@@ -21,7 +21,7 @@ blap.chug()
 
 '''
 
-from tg_modules.mem_clean import clean_mem
+from gc import collect as clean_mem
 
 class thread_list():
 
@@ -39,10 +39,8 @@ class thread_list():
     def chug(self):
         for cur_list in self.thread_list:
             while len(cur_list):
-                print((cur_list))
                 cur_list[0].perform()
                 cur_list.pop(0)
-                print((cur_list))
                 clean_mem()
 
                 

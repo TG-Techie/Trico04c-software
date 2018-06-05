@@ -54,7 +54,10 @@ Implementation Notes
 #. Datasheet: https://datasheets.maximintegrated.com/en/ds/DS3231.pdf
 
 """
+from gc import collect as clean_mem
+clean_mem()
 from adafruit_bus_device.i2c_device import I2CDevice
+clean_mem()
 from adafruit_register import i2c_bit
 from adafruit_register import i2c_bcd_alarm
 from adafruit_register import i2c_bcd_datetime

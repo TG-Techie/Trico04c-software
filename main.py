@@ -1,54 +1,33 @@
-from tg_modules.mem_clean import clean_mem
+from gc import collect as clean_mem
+import gc
+gc.enable()
 clean_mem()
 from staging import screen
 clean_mem()
 from tg_modules.tasking import thread_list
 clean_mem()
 
-#make the thread_list for the whole project:
+
+#make the thread_list for the whole project, send to screen:
 trd = thread_list()
-#print(trd)
-#print(trd.thread_list)
+screen.init(trd)
 clean_mem()
 
-#screen init
-screen.init(trd)
+
 
 screen.place_top_bar()
-
-
-print(trd.thread_list)
-print()
 trd.chug()
-print()
-
-print(trd.thread_list)
-#trd.chug()
-
+clean_mem()
+screen.place_top_bar()
+trd.chug()
 
 
-'''
+'''from staging.pin_port import i2c_port
 import time
-from adafruit_ds3231 import DS3231
 
-ds = DS3231(i2c)
+from adafruit.ds3231 import DS3231
+
+print(gc.mem_free(),gc.mem_alloc())
+
+ds = DS3231(i2c_port)
 print(ds.datetime)'''
-
-
-#example
-"""#disp.fill(colorst(0,0,255))
-#disp.text(0,0,"ABCDEFGHIJKLMNOPQRSTU")
-#disp.text(0,8,"VWXYZ0123456789().")
-disp.text(0,16,'"S,;:@ #$%^&*-_+=`~')
-disp.text(0,50,"ROB A.", size = 3)
-disp.round_rect(0,0,50,50,15,0)
-disp.round_rect(60,10,40,20,5,colorst(180,255,180))"""
-
-
-
-"""
-import time
-i2c = busio.I2C(board.SCL, board.SDA)
-from adafruit_ds3231 import DS3231
-ds = DS3231(i2c)
-print(ds.datetime)"""

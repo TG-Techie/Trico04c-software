@@ -1,4 +1,4 @@
-from tg_modules.mem_clean import clean_mem
+from gc import collect as clean_mem
 from staging.disp import disp, backlite as back_light, colorst
 clean_mem()
 from staging import sensor
@@ -20,18 +20,22 @@ thread = None
 def init(thread_list):
     global thread
     thread = thread_list
+    del thread_list
     clean_mem()
 
-def text_task(x,y,str):
-    thread.add_task(disp.text,(x,y,str),3)
+def text_task(x,y,str, priority = 3):
+    thread.add_task(disp.text,(x,y,str),priority)
+    del x,y,str
     clean_mem()
 
-def rect_task(x,y,w,h,color):
-    thread.add_task(disp.rect,(x,y, w ,h,color),1)
+def rect_task(x,y,w,h,color,priority = 1):
+    thread.add_task(disp.rect,(x,y, w ,h,color),priority)
+    del x,y,w,h,color
     clean_mem()
     
 def place_top_bar():
-    
+    rect_task(0,0,disp.width,10,black)
+    #figure out time
     time_tup = sensor.get_time()
     clean_mem()
     if time_tup[3] >12:
@@ -43,13 +47,25 @@ def place_top_bar():
         time_string = '0' + time_string
     clean_mem()
     text_task(int(disp.width/2) - int(5*6 /2),gap,time_string)
+    del time_string, time_tup
     clean_mem()
-    per_offset = 0
+    #figure out bat percent
     bat_per = sensor.bat_percent()
-    if bat_per == 100:
-        per_offset = 1
-    text_task(int(disp.width - gap - 6*(6+per_offset)), gap,
-                               str(bat_per) +'% *bata' + str(int(bat_per*6/100)) + '*')
+    bat_string = ''
+    if bat_per < 100:
+        bat_string += ' '
+    if bat_per < 10:
+        bat_string += ' '
+    bat_string += str(bat_per) + '%__bata'
+    if sensor.is_charging():
+        bat_string += 'chrg__'
+    else:
+        bat_string += str(int((bat_per+10)*6/100)) + '__'
+    text_task(int(disp.width - 3 - 6*(6)), gap, bat_string)
+    del bat_per, bat_string
+    clean_mem()
+    #add rect bar
     rect_task(0,8+2*gap, disp.width ,gap,white)
     clean_mem()
-    
+
+

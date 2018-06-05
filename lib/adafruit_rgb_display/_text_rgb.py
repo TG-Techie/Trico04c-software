@@ -24,7 +24,8 @@ from micropython import const
 import ustruct as struct
 import adafruit_bus_device.spi_device as spi_device
 
-from tg_modules.fonts.bg import text_dict
+from tg_modules.fonts.tg_font_trico04c import text_dict
+from gc import collect as clean_mem
 
 __version__ = "3.0.3"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_RGB_Display.git"
@@ -88,33 +89,38 @@ class Display: #pylint: disable-msg=no-member
             return self.read(self._RAM_READ,
                              (x1 - x0 + 1) * (y1 - y0 + 1) * size)
         self.write(self._RAM_WRITE, data)
+        del x0, y0, x1, y1, data
+        clean_mem()
         return None
     #pylint: enable-msg=invalid-name,too-many-arguments
 
     def _encode_pos(self, x, y):
         """Encode a postion into bytes."""
         return struct.pack(self._ENCODE_POS, x, y)
+        del x,y
+        clean_mem()
 
     def _encode_pixel(self, color):
         """Encode a pixel color into bytes."""
         return struct.pack(self._ENCODE_PIXEL, color)
+        del color
 
     def _decode_pixel(self, data):
         """Decode bytes into a pixel color."""
         return color565(*struct.unpack(self._DECODE_PIXEL, data))
+        del data
+        clean_mem()
 
-    def pixel(self, xin, yin, color=None):
+    def pixel(self, x, y, color=None):
         """Read or write a pixel at a given position."""
-        if self.rotation == 1:
-            x = self.hardware_width - yin -1
-            y = xin
-        
         if color is None:
             return self._decode_pixel(self._block(x, y, x, y))
 
         if 0 <= x < self.hardware_width and 0 <= y < self.hardware_height:
             self._block(x, y, x, y, self._encode_pixel(color))
         return None
+        del x,y,color
+        clean_mem()
 
     #pylint: disable-msg=too-many-arguments
     def rect(self, x, y, width, height, color):
@@ -137,10 +143,13 @@ class Display: #pylint: disable-msg=no-member
     def fill(self, color=0):
         #"""Fill the whole display with the specified color."""
         self.rect(0, 0, self.hardware_width, self.hardware_height, color)
+        del color
+        clean_mem()
 
     def hline(self, x, y, width, color):
         #"""Draw a horizontal line."""
         self.rect(x, y, width, 1, color)
+
 
     def vline(self, x, y, height, color):
         #"""Draw a vertical line."""
@@ -148,21 +157,21 @@ class Display: #pylint: disable-msg=no-member
 
     def text(self,x,y,str, size = 1, color = colorst(255,255,255)):
         comp_list = []
-        for section in (str.upper()).split():
+        for section in (str.upper()).split('__'):
             try:
                 comp_list.append(0)
-                comp_list += text_dict[section]
+                comp_list += text_dict['__'+section+'__']
             except KeyError:
                 for char in section:
                     comp_list.append(0)
                     try:
                         comp_list += text_dict[char]
                     except KeyError:
-                        comp_list += text_dict["*?*"]
-            comp_list += text_dict[" "]
+                        comp_list += text_dict["__?__"]
+            #comp_list += text_dict[" "]
         #print(comp_list) # debug concated list
         x_pos = 0
-        y_Pos = 0
+        y_pos = 0
         for stripe in comp_list:
             y_pos = size
             #stripe_text = bin(stripe)[3:10]
@@ -172,6 +181,8 @@ class Display: #pylint: disable-msg=no-member
                     self.rect(x+x_pos,y+y_pos,size,size,color)
                 y_pos += size
             x_pos += size
+        del x,y,str,size,color, comp_list, x_pos, y_pos
+        clean_mem()
 
     def round_rect(self,x,y,width,height,r,color):
         #calc gaps
@@ -186,6 +197,8 @@ class Display: #pylint: disable-msg=no-member
         #place mid rect
         for j in reversed(range(r)):
             self.hline(x+gap_list[j],y+height-j,width - 2*gap_list[j],color)
+        del gap_list
+        clean_mem()
 
 class DisplaySPI(Display):
     #"""Base class for SPI type devices"""
